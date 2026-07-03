@@ -74,10 +74,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install frontend deps & Playwright
+      - name: Install frontend deps, build & Playwright
         run: |
           cd frontend
           npm ci
+          npm run build
           npx playwright install --with-deps
 
       - name: Start frontend preview and run Playwright tests
