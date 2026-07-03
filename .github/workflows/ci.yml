@@ -87,6 +87,14 @@ jobs:
           cd frontend
           npm run preview -- --port 5173 --host > /tmp/preview.log 2>&1 &
           PREV_PID=$!
-          sleep 12
+            # esperar hasta 60s a que el frontend responda
+            for i in $(seq 1 12); do
+              if curl -sS http://127.0.0.1:5173 >/dev/null 2>&1; then
+                echo "preview listo"
+                break
+              fi
+              echo "esperando preview... intento $i/12"
+              sleep 5
+            done
           npx playwright test --config=playwright.config.js --project=chromium --reporter=github
           kill ${PREV_PID} || true
