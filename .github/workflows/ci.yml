@@ -87,6 +87,6 @@ jobs:
           cd frontend
           npm run preview -- --port 5173 --host > /tmp/preview.log 2>&1 &
           PREV_PID=$!
-          sleep 4
+          sleep 12
           npx playwright test --config=playwright.config.js --project=chromium --reporter=github
           kill ${PREV_PID} || true
