@@ -18,6 +18,7 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@control_db:5432/postgres
+      FRONTEND_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173,http://127.0.0.1,https://alanriverocd.github.io"
     ports:
       - "8000:8000"
     networks:
