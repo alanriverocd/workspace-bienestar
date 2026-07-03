@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { VirtualScroller } from 'primereact/virtualscroller'
+import { info, error as logError } from '../utils/logger'
 
 function useDebouncedValue(value, delay = 300){
   const [v, setV] = useState(value)
@@ -29,27 +30,42 @@ export default function Dashboard(){
   const [modal, setModal] = useState(null)
 
   useEffect(()=>{
-    axios.get('http://localhost:8000/dashboard').then(r=> setDashboard(r.data)).catch(()=>{})
+    axios.get('http://localhost:8000/dashboard')
+      .then(r=> { setDashboard(r.data); info('Loaded dashboard', {count: r.data.sincronizaciones?.length}) })
+      .catch(e=> { logError('Failed loading dashboard', e) })
   },[])
 
   useEffect(()=>{
-    axios.get('http://localhost:8000/logs', {params: {q: debounced}}).then(r=> setLogs(r.data.logs)).catch(()=>{})
+    axios.get('http://localhost:8000/logs', {params: {q: debounced}})
+      .then(r=> setLogs(r.data.logs))
+      .catch(e=> { logError('Failed loading logs', e) })
   },[debounced])
 
   return (
     <div>
-      <section>
+      <section className="card">
         <h2>Sincronizaciones</h2>
-        <pre style={{maxHeight:200, overflow:'auto'}}>{JSON.stringify(dashboard, null, 2)}</pre>
+        <div className="sync-grid">
+          {(dashboard.sincronizaciones || []).map((s,i)=> (
+            <div key={i} className="sync-item">
+              <div className="sync-title">{s.nombre || `Sync ${i+1}`}</div>
+              <div className="sync-meta">{s.estado || '—'}</div>
+            </div>
+          ))}
+          {(!dashboard.sincronizaciones || dashboard.sincronizaciones.length === 0) && <div className="muted">No hay sincronizaciones registradas</div>}
+        </div>
       </section>
 
-      <section>
+      <section className="card">
         <h2>Logs</h2>
-        <input aria-label="buscar-logs" placeholder="Buscar logs" value={query} onChange={e=> setQuery(e.target.value)} />
+        <div className="toolbar">
+          <input aria-label="buscar-logs" className="search" placeholder="Buscar logs" value={query} onChange={e=> setQuery(e.target.value)} />
+        </div>
         <VirtualList items={logs} renderItem={(l)=> (
-          <div key={l.id} style={{padding:8, borderBottom:'1px solid #eee'}}>
-            <b>{l.codigo}</b> - {l.mensaje}
-            <button onClick={()=> setModal(l)}>Detalle</button>
+          <div key={l.id} className="log-row">
+            <div className="log-code">{l.codigo}</div>
+            <div className="log-message">{l.mensaje}</div>
+            <div className="log-actions"><button onClick={()=> setModal(l)} className="btn-sm">Detalle</button></div>
           </div>
         )} />
       </section>
