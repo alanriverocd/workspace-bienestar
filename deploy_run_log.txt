@@ -1,9 +1,0 @@
-﻿gh : failed to get run: HTTP 404: Not Found (https://api.github.com/repos/alanr
-iverocd/workspace-bienestar/actions/runs/3?exclude_pull_requests=true)
-En línea: 1 Carácter: 1
-+ gh run view $number --repo $repo --log 2>&1 | Out-File deploy_run_log ...
-+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (failed to get r..._requests=true) 
-   :String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
