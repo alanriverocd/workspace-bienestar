@@ -6,7 +6,25 @@ test.setTimeout(180000);
 
 test('open dashboard, search logs, open modal', async ({ page }) => {
   const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173';
+  // capture network responses to detect asset load failures in CI
+  const responses = [] as {url:string, status:number, type:string}[];
+  page.on('response', (r) => {
+    const req = r.request();
+    const type = req.resourceType();
+    if (['script', 'stylesheet', 'document', 'xhr', 'fetch', 'image'].includes(type)) {
+      responses.push({ url: r.url(), status: r.status(), type });
+    }
+  });
+
   await page.goto(base, { waitUntil: 'networkidle', timeout: 90000 });
+
+  // if any critical assets failed to load, dump short summary and fail early with diagnostics
+  const failed = responses.filter(r => r.status >= 400);
+  if (failed.length > 0) {
+    const summary = failed.map(f => `${f.type} ${f.status} ${f.url}`).slice(0,20).join('\n');
+    try { await writeFile('test-results/network-failures.txt', summary); } catch(e){}
+    throw new Error('Recursos críticos fallaron al cargar:\n' + summary);
+  }
   // wait for main heading so we know the page finished rendering
   const heading = page.getByRole('heading', { name: 'Sincronizaciones' });
 
