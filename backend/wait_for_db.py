@@ -11,6 +11,8 @@ async def check():
         await conn.close()
         return True
     except Exception:
+        import traceback
+        traceback.print_exc()
         return False
 
 if __name__ == '__main__':
