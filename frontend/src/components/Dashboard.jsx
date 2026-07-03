@@ -45,7 +45,7 @@ export default function Dashboard(){
     axios.get('http://localhost:8000/logs', {params: {q: debounced, page: logsPage, per_page: logsRows}})
       .then(r=> { setLogs(r.data.logs || []); setLogsTotal(r.data.total || 0) })
       .catch(e=> { logError('Failed loading logs', e) })
-  },[debounced])
+  },[debounced, logsPage, logsRows])
 
   return (
     <div>
@@ -72,7 +72,7 @@ export default function Dashboard(){
 
       <section className="card">
         <h2>Logs</h2>
-        <div className="toolbar">
+        <div className="toolbar sticky">
           <input aria-label="buscar-logs" className="search" placeholder="Buscar logs" value={query} onChange={e=> { setQuery(e.target.value); setLogsPage(1) }} />
         </div>
         <div className="logs-list">
