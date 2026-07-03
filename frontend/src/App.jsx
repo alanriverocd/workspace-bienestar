@@ -7,7 +7,13 @@ export default function App(){
     <div className="app-root">
       <header className="topbar">
         <div className="brand">
-          <img src="/assets/logo192.png" alt="logo" className="brand-logo" onError={(e)=> e.target.style.display='none'} />
+          <div className="brand-logo" aria-hidden="true">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="48" height="48" rx="8" fill="#0b66ff" />
+              <path d="M12 30C14.5 26 20 20 28 18" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="32" cy="14" r="3" fill="white" />
+            </svg>
+          </div>
           <div>
             <h1 className="title">Control de Fallas</h1>
             <p className="subtitle">Plataforma de supervisión y sincronización</p>
