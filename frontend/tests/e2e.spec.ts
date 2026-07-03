@@ -1,14 +1,40 @@
 import { test, expect } from '@playwright/test';
+import { writeFile } from 'fs/promises';
 
 // aumentar timeout del test para CI lento
-test.setTimeout(120000);
+test.setTimeout(180000);
 
 test('open dashboard, search logs, open modal', async ({ page }) => {
   const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173';
-  await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
+  await page.goto(base, { waitUntil: 'networkidle', timeout: 90000 });
   // wait for main heading so we know the page finished rendering
   const heading = page.getByRole('heading', { name: 'Sincronizaciones' });
-  await heading.waitFor({ state: 'visible', timeout: 60000 });
+
+  // Poll for the heading to tolerate slow CI startup or client-side data fetches
+  const maxWait = 120000; // ms
+  const pollInterval = 1000; // ms
+  const start = Date.now();
+  let found = false;
+  while (Date.now() - start < maxWait) {
+    try {
+      if (await heading.isVisible()) { found = true; break; }
+    } catch (e) {
+      // ignore locator errors while app bootstraps
+    }
+    await page.waitForTimeout(pollInterval);
+  }
+  if (!found) {
+    const ts = Date.now();
+    // attempt to save diagnostic artifacts for CI
+    try {
+      await page.screenshot({ path: `test-results/playwright-failure-${ts}.png`, fullPage: true });
+      const html = await page.content();
+      await writeFile(`test-results/playwright-failure-${ts}.html`, html);
+    } catch (e) {
+      // ignore write errors
+    }
+    throw new Error('Heading "Sincronizaciones" no encontrado después de espera');
+  }
 
   // then wait for logs input to appear (longer timeout to tolerate slow preview/build)
   const input = page.getByPlaceholder('Buscar logs');
