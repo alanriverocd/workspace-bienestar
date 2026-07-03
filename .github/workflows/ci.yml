@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run unit tests (inside docker)
-        run: ./scripts/test.sh
+        run: bash ./scripts/test.sh
 
   e2e:
     name: E2E (Playwright)
