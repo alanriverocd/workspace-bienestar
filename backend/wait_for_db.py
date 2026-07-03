@@ -19,6 +19,11 @@ if __name__ == '__main__':
     interval = 1
     elapsed = 0
     while elapsed < timeout:
+        # some callers set DATABASE_URL like 'postgresql+asyncpg://...' (SQLAlchemy style)
+        # asyncpg expects 'postgresql://', so normalize the scheme if needed
+        raw = os.environ.get('DATABASE_URL', '')
+        if raw.startswith('postgresql+asyncpg://'):
+            os.environ['DATABASE_URL'] = raw.replace('postgresql+asyncpg://', 'postgresql://', 1)
         ok = asyncio.run(check())
         if ok:
             print('db ready')
