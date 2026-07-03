@@ -10,6 +10,7 @@ from .schemas import ArchivoCreate, SincronizacionCreate, LogCreate, AccionCreat
 from .utils import sha256_of_bytes, run_cpu_bound
 import datetime
 import asyncio
+import os
 
 app = FastAPI(title="Control y Auditoría")
 
@@ -18,9 +19,17 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("control_backend")
 
 # CORS (allow frontend dev host)
+# Allow configurable frontend origins via env var `FRONTEND_ORIGINS` (comma-separated)
+default_origins = ["http://localhost:5173", "https://alanriverocd.github.io"]
+raw = os.environ.get("FRONTEND_ORIGINS")
+if raw:
+    origins = [o.strip() for o in raw.split(',') if o.strip()]
+else:
+    origins = default_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
