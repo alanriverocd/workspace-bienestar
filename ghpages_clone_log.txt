@@ -1,0 +1,8 @@
+﻿git : Cloning into 'ghpages_clone'...
+En línea: 1 Carácter: 1
++ git clone --depth=1 --branch gh-pages https://github.com/alanriverocd ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Cloning into 'ghpages_clone'...:S 
+   tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
