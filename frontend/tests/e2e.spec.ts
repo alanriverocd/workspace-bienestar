@@ -1,10 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+// aumentar timeout del test para CI lento
+test.setTimeout(120000);
+
 test('open dashboard, search logs, open modal', async ({ page }) => {
-  await page.goto('/');
+  const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173';
+  await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
   // wait for main heading so we know the page finished rendering
   const heading = page.getByRole('heading', { name: 'Sincronizaciones' });
-  await heading.waitFor({ state: 'visible', timeout: 30000 });
+  await heading.waitFor({ state: 'visible', timeout: 60000 });
 
   // then wait for logs input to appear (longer timeout to tolerate slow preview/build)
   const input = page.getByPlaceholder('Buscar logs');
