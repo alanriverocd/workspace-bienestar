@@ -7,7 +7,11 @@ DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@co
 
 async def check():
     try:
-        conn = await asyncpg.connect(DATABASE_URL)
+        # read and normalize DATABASE_URL at call time
+        raw = os.environ.get('DATABASE_URL', DATABASE_URL)
+        if raw.startswith('postgresql+asyncpg://'):
+            raw = raw.replace('postgresql+asyncpg://', 'postgresql://', 1)
+        conn = await asyncpg.connect(raw)
         await conn.close()
         return True
     except Exception:
