@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
 import { VirtualScroller } from 'primereact/virtualscroller'
+import { Paginator } from 'primereact/paginator'
 import { info, error as logError } from '../utils/logger'
 
 function useDebouncedValue(value, delay = 300){
@@ -24,6 +25,8 @@ function VirtualList({items, rowHeight=60, height=400, renderItem}){
 
 export default function Dashboard(){
   const [dashboard, setDashboard] = useState({sincronizaciones:[]})
+  const [syncPage, setSyncPage] = useState(0)
+  const [syncRows, setSyncRows] = useState(6)
   const [query, setQuery] = useState('')
   const debounced = useDebouncedValue(query, 300)
   const [logs, setLogs] = useState([])
@@ -46,13 +49,21 @@ export default function Dashboard(){
       <section className="card">
         <h2>Sincronizaciones</h2>
         <div className="sync-grid">
-          {(dashboard.sincronizaciones || []).map((s,i)=> (
-            <div key={i} className="sync-item">
-              <div className="sync-title">{s.nombre || `Sync ${i+1}`}</div>
-              <div className="sync-meta">{s.estado || '—'}</div>
-            </div>
-          ))}
-          {(!dashboard.sincronizaciones || dashboard.sincronizaciones.length === 0) && <div className="muted">No hay sincronizaciones registradas</div>}
+          {(() => {
+            const items = dashboard.sincronizaciones || []
+            if(items.length === 0) return <div className="muted">No hay sincronizaciones registradas</div>
+            const start = syncPage * syncRows
+            const end = Math.min(start + syncRows, items.length)
+            return items.slice(start, end).map((s,i)=> (
+              <div key={start + i} className="sync-item">
+                <div className="sync-title">{s.nombre || `Sync ${start + i + 1}`}</div>
+                <div className="sync-meta">{s.estado || '—'}</div>
+              </div>
+            ))
+          })()}
+        </div>
+        <div style={{marginTop: 12}}>
+          <Paginator first={syncPage * syncRows} rows={syncRows} totalRecords={(dashboard.sincronizaciones || []).length} rowsPerPageOptions={[6,12,24]} onPageChange={(e)=>{ setSyncPage(Math.floor(e.first / e.rows)); setSyncRows(e.rows); }} />
         </div>
       </section>
 
