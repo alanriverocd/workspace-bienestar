@@ -30,6 +30,9 @@ export default function Dashboard(){
   const [query, setQuery] = useState('')
   const debounced = useDebouncedValue(query, 300)
   const [logs, setLogs] = useState([])
+  const [logsPage, setLogsPage] = useState(1)
+  const [logsRows, setLogsRows] = useState(10)
+  const [logsTotal, setLogsTotal] = useState(0)
   const [modal, setModal] = useState(null)
 
   useEffect(()=>{
@@ -39,8 +42,8 @@ export default function Dashboard(){
   },[])
 
   useEffect(()=>{
-    axios.get('http://localhost:8000/logs', {params: {q: debounced}})
-      .then(r=> setLogs(r.data.logs))
+    axios.get('http://localhost:8000/logs', {params: {q: debounced, page: logsPage, per_page: logsRows}})
+      .then(r=> { setLogs(r.data.logs || []); setLogsTotal(r.data.total || 0) })
       .catch(e=> { logError('Failed loading logs', e) })
   },[debounced])
 
@@ -70,15 +73,20 @@ export default function Dashboard(){
       <section className="card">
         <h2>Logs</h2>
         <div className="toolbar">
-          <input aria-label="buscar-logs" className="search" placeholder="Buscar logs" value={query} onChange={e=> setQuery(e.target.value)} />
+          <input aria-label="buscar-logs" className="search" placeholder="Buscar logs" value={query} onChange={e=> { setQuery(e.target.value); setLogsPage(1) }} />
         </div>
-        <VirtualList items={logs} renderItem={(l)=> (
-          <div key={l.id} className="log-row">
-            <div className="log-code">{l.codigo}</div>
-            <div className="log-message">{l.mensaje}</div>
-            <div className="log-actions"><button onClick={()=> setModal(l)} className="btn-sm">Detalle</button></div>
-          </div>
-        )} />
+        <div className="logs-list">
+          {(logs || []).map(l=> (
+            <div key={l.id} className="log-row">
+              <div className="log-code">{l.codigo}</div>
+              <div className="log-message">{l.mensaje}</div>
+              <div className="log-actions"><button onClick={()=> setModal(l)} className="btn-sm">Detalle</button></div>
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:12}}>
+          <Paginator first={(logsPage-1)*logsRows} rows={logsRows} totalRecords={logsTotal} rowsPerPageOptions={[5,10,25]} onPageChange={(e)=>{ setLogsPage(Math.floor(e.first / e.rows) + 1); setLogsRows(e.rows); }} />
+        </div>
       </section>
 
       {modal && (

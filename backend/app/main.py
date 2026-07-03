@@ -130,17 +130,28 @@ async def dashboard():
 
 
 @app.get("/logs")
-async def logs(q: str = None):
+async def logs(q: str = None, page: int = 1, per_page: int = 25):
+    """Return paginated logs. Query param `q` filters by mensaje (ILIKE)."""
+    if page < 1:
+        page = 1
+    if per_page < 1:
+        per_page = 25
     async with SessionLocal() as session:
-        stmt = select(LogError)
+        base = select(LogError)
         if q:
-            stmt = stmt.where(LogError.mensaje.ilike(f"%{q}%"))
+            base = base.where(LogError.mensaje.ilike(f"%{q}%"))
+        # total count
+        total_q = await session.execute(base.with_only_columns([LogError.id]))
+        total = len(total_q.scalars().all())
+        # apply pagination
+        offset = (page - 1) * per_page
+        stmt = base.offset(offset).limit(per_page)
         res = await session.execute(stmt)
         logs = [
             {"id": r.id, "mensaje": r.mensaje, "codigo": r.codigo_error, "nivel": (r.nivel_error.value if hasattr(r.nivel_error, 'value') else r.nivel_error)}
             for r in res.scalars().all()
         ]
-        return {"logs": logs}
+        return {"logs": logs, "page": page, "per_page": per_page, "total": total}
 
 
 @app.post('/logs')
